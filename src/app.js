@@ -1,3 +1,6 @@
+"use strict";
+import Physics from 'PhysicsJS';
+
 Physics(function(world){
 
   var viewWidth = 500;
