@@ -9,11 +9,20 @@ module.exports = function(grunt) {
       }
     },
     clean: {
-      folder: ['dist/']
+      html: ['dist/*.html'],
+      css: ['dist/*.css'],
+      js: ['dist/*.js'], 
+      all: ['dist'] 
     },
     watch: {
-      files: ['src/*'],
-      tasks: ['default']
+      html: {
+        files: ['src/*.html'],
+        tasks: ['clean:html','htmlmin']
+      },
+      js: {
+        files: ['src/*.js'],
+        tasks: ['clean:js','browserify']
+      }
     },
     connect: {
       options: {
@@ -51,6 +60,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-browserify');
-  grunt.registerTask('default', ['clean', 'htmlmin','browserify']);
+  grunt.registerTask('default', ['clean:all', 'htmlmin','browserify']);
   grunt.registerTask('serve', ['connect:watch', 'watch']);
 };
