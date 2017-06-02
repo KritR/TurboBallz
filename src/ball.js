@@ -25,6 +25,6 @@ export default class Ball {
     return this.body;
   }
   getRenderBody(){
-    return new PIXI.Circle(this.body.x, this.body.y, this.radius);
+    return new PIXI.Circle(this.body.position.x, this.body.position.y, this.radius);
   }
 }
