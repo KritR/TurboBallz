@@ -4,6 +4,7 @@ import pep from 'pepjs';
 import PIXI from 'pixi.js';
 import {Game} from './game.js';
 import Color from 'color';
+import Matter from 'matter-js';
 
 export default class Application {
   constructor(){

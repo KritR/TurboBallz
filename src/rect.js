@@ -2,12 +2,10 @@
 import { Bodies, Body } from 'matter-js';
 import { RECT_CATEGORY } from './collision-categories.js';
 
-const SIDE_LENGTH = 8;
 
 export default class Rect {
-  constructor(x,y, side = SIDE_LENGTH){
-    this.side = side;
-    this.body = Bodies.rectangle(x, y, side, side, { 
+  static create(x,y,side,life){
+    const body = Bodies.rectangle(x, y, side, side, { 
       collisionFilter: {
         category: RECT_CATEGORY
       },
@@ -16,12 +14,13 @@ export default class Rect {
       frictionAir: 0,
       frictionStatic: 0
     });
-    // May Be setAngularVelocity
-  }  
-  getPhysicsBody(){
-    return this.body;
-  }
-  getRenderBody(){
-    return new PIXI.Rectangle(this.body.x, this.body.y, this.side, this.side);
+
+    body.side = side;
+    body.life = life;
+    body.isRect = true;
+    body.getGraphic = function(){
+      return new PIXI.Rectangle(this.position.x, this.position.y, this.side, this.side);
+    }
+    return body;  
   }
 }
