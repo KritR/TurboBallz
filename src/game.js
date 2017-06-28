@@ -1,5 +1,5 @@
 "use strict";
-import { Engine , World , Events, Vector, Composite, Body } from 'matter-js';
+import { Engine , World , Events, Vector, Composite, Body, Bodies } from 'matter-js';
 import Matter from 'matter-js';
 import Ball from './ball.js';
 import Rect from './rect.js';
@@ -8,7 +8,6 @@ import MatterCollisionEvents from 'matter-collision-events';
 
 Matter.use('matter-collision-events');
 
-const BALL_VELOCITY = 1;
 const GameState = Object.freeze({
   LAUNCH: 1,
   PLAYING: 2,
@@ -23,16 +22,17 @@ class Game {
     this.rectSide = canvas.clientWidth / 8;
     this.rectGap = this.rectSide / 8;
     this.ballRadius = this.rectSide * 3/16;
+    this.ballVelocity = this.ballRadius * 0.8;
     this.engine.world.bounds.max.x = canvas.clientWidth;
     this.engine.world.bounds.max.y = canvas.clientHeight;
     this.world.gravity.y = 0
     Engine.run(this.engine);
     this.scene = new PIXI.Application(canvas.clientWidth, canvas.clientHeight, {view: canvas});
+    this.createWalls();
     this.level = 1;
-    this.ballCount = 1;
+    this.ballCount = 30;
     this.pointerDown = false;
     this.pointerStartPos = Vector.create(0,0);
-    this.registerCollisionListener();
     this.registerPointerListener();
     this.graphic = new PIXI.Graphics();
     this.launchers = [];
@@ -55,24 +55,44 @@ class Game {
     this.launchers[0].activate();
   }
   playing(){
-    console.log('now playing');
     this.state = GameState.PLAYING;
   }
   newLevel(){
     this.state = GameState.NEW_LEVEL;
     this.level++;
     this.removeLauncher();
-    this.generateLevel();
     this.shiftLevels();
+    this.generateLevel();
     this.launch();
   }
+
+  createWalls(){
+    const vCenter = this.canvas.clientHeight/2;
+    const hCenter = this.canvas.clientWidth/2;
+    const leftWall = Bodies.rectangle(-1,vCenter,1,this.canvas.clientHeight, {isStatic: true});
+    const rightWall = Bodies.rectangle(this.canvas.clientWidth,vCenter,1,this.canvas.clientHeight, {isStatic: true});
+    const ceil = Bodies.rectangle(hCenter,-1,this.canvas.clientWidth,1, {isStatic: true});
+    const ground = Bodies.rectangle(hCenter,this.canvas.clientHeight,this.canvas.clientWidth,1, {isStatic: true});
+    ground.onCollide(pair => {
+      const otherBody = pair.bodyA != ground ? pair.bodyA : pair.bodyB;
+      if( otherBody.isBall ){
+        if(this.launchers.length == 1) {
+          this.addLauncher(otherBody.position.x);
+        }
+        World.remove(this.world, otherBody);
+      } /* else if ( otherBody.isRect ){
+        alert("Game Over");
+      } */ // Doesn't work yet due to matterjs bug
+    });
+    World.add(this.world, [leftWall, rightWall, ceil, ground]);
+  }
   generateLevel(){
-    const y = this.rectSide + this.rectGap;
-    for(let i = 0; i < 8; i++){
+    const y = 1.5 * this.rectSide + this.rectGap;
+    for(let i = 0; i < 7; i++){
       if(Math.floor(Math.random()*3) > 0){
        continue;
       }
-      const x = this.rectGap + ( i * (this.rectGap + this.rectSide));
+      const x = this.rectGap + 0.5 * this.rectSide + ( i * (this.rectGap + this.rectSide));
       const life = Math.ceil(this.level * 2 * Math.random());
       const rect = Rect.create(x,y,this.rectSide,life); 
       rect.onCollideEnd( pair => {
@@ -85,9 +105,13 @@ class Game {
     }
   }
   shiftLevels(){
-    for(const body in Composite.allBodies(this.world)){
+    for(const body of Composite.allBodies(this.world)){
+      console.log(body);
       if(body.isRect == true){
-        body.position.y += (this.rectGap + this.rectSide);
+        Body.translate(body, Vector.create(0,(this.rectGap + this.rectSide)));
+        if(body.position.y >= (this.canvas.clientHeight - ((2 * this.ballRadius) + this.rectSide/2))){
+          alert('game over');
+        }
       }
     }
   }
@@ -100,23 +124,19 @@ class Game {
     const launcher = this.launchers.shift();
     this.scene.stage.removeChild(launcher.graphic);
   }
-  registerCollisionListener(){
-    Events.on(this.engine, "afterUpdate", function() {
-      console.log('goodbye sweet world');
-    });
-  }
+
   registerPointerListener(){
+    /* ON SCREEN RELEASE WHEN LAUNCH + MIN VECTOR
+     * GET EVENT DATA
+     * LAUNCH BALLS
+     * PLAYING STATE
+     */
     document.getElementById("game").addEventListener("pointerdown", e => {
       if(this.state == GameState.LAUNCH){
         this.pointerDown = true;
         this.pointerStartPos = Vector.create(e.pageX, e.pageY);
       }
     });
-    /* ON SCREEN RELEASE WHEN LAUNCH + MIN VECTOR
-     * GET EVENT DATA
-     * LAUNCH BALLS
-     * PLAYING STATE
-     */
     document.addEventListener("pointerup", e => {
       this.pointerDown = false;
       if(this.launchers[0].isLaunchable() && this.state == GameState.LAUNCH){
@@ -142,11 +162,8 @@ class Game {
     console.log('Creating new Ball @ x : ' + x + ' | y : ' + y);
     const ball = Ball.create(x,y,this.ballRadius);
     const launchVec = Vector.normalise(launcher.vector);
-        ball.onCollide( pair => {
-      // Kill Ball on Ground Collision
-    });
     World.add(this.world, ball);
-    Body.setVelocity(ball, launchVec); 
+    Body.setVelocity(ball, Vector.mult(launchVec, this.ballVelocity)); 
   }  
 
   renderLoop(delta){
@@ -157,11 +174,12 @@ class Game {
     
     let ballsRemaining = (this.launchers[0].ballCount > 0);
     for( const body of Composite.allBodies(this.world) ){
+      if(body.visible) {
       this.graphic.drawShape(body.getGraphic());
+      }
 
       if(this.state == GameState.PLAYING){
         if(body.isBall == true){
-          console.log('body is at ' + body.position.x + ' : ' + body.position.y );
           ballsRemaining = true;
         }
       }
@@ -187,16 +205,6 @@ class Game {
     }
 
   }
-      /* ON FALLING ANIMATION DONE
-   * NEWLEVEL
-   */
-   /* GENERATE LEVEL
-    * CREATE RECT ARRAY BASED ON SCREEN WIDTH and LEVEL
-    */
-   /* RENDER LEVEL
-    * ADD RECTS TO WORLD
-    */
-   
 }
 
 export {GameState, Game};
