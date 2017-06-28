@@ -13,9 +13,11 @@ export default class Ball {
       },
       friction: 0,
       frictionAir: 0,
-      frictionStatic: 0
+      frictionStatic: 0,
+      restitution: 1
     });
     body.radius = radius;
+    body.visible = true;
     body.isBall = true;
     body.getGraphic = function(){
       return new PIXI.Circle(this.position.x, this.position.y, this.radius);

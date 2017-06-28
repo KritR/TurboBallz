@@ -18,8 +18,9 @@ export default class Rect {
     body.side = side;
     body.life = life;
     body.isRect = true;
+    body.visible = true;
     body.getGraphic = function(){
-      return new PIXI.Rectangle(this.position.x, this.position.y, this.side, this.side);
+      return new PIXI.Rectangle(this.position.x - this.side/2, this.position.y - this.side/2, this.side, this.side);
     }
     return body;  
   }
