@@ -6,6 +6,10 @@ const BALL_VELOCITY = 0.5;
 
 export default class Ball {
   static create(x,y,radius){
+    const graphic = new PIXI.Graphics();
+    const shape = new PIXI.Circle(0, 0, radius);
+    graphic.beginFill(0xFFFFFF);
+    graphic.drawShape(shape);
     const body = Bodies.circle(x, y, radius, { 
       collisionFilter: {
         category: BALL_CATEGORY,
@@ -16,13 +20,15 @@ export default class Ball {
       frictionStatic: 0,
       restitution: 1
     });
+    body.graphic = graphic;
     body.radius = radius;
-    body.visible = true;
+    body.renderable = true;
     body.isBall = true;
-    body.drawGraphic = function(graphic){
-      const shape = new PIXI.Circle(this.position.x, this.position.y, this.radius);
-      graphic.drawShape(shape);
+    body.update = () => {
+      body.graphic.x = body.position.x
+      body.graphic.y = body.position.y
     }
+    body.update();
     return body;
   }
 }

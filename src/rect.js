@@ -2,9 +2,19 @@
 import { Bodies, Body } from 'matter-js';
 import { RECT_CATEGORY } from './collision-categories.js';
 
-
 export default class Rect {
   static create(x,y,side,life){
+    const graphic = new PIXI.Graphics();
+    const x_pos = -side/2;
+    const y_pos = -side/2;
+    const shape = new PIXI.Rectangle(x_pos,y_pos, side, side);
+    graphic.beginFill(0xFFFFFF);
+    graphic.drawShape(shape);
+    const text = new PIXI.Text(life.toString(), {fontFamily : 'Arial', fontSize: side/2, fill : 0x000000, align : 'center'});
+    text.x = 0;
+    text.y = -side/4;
+    graphic.addChild(text);
+
     const body = Bodies.rectangle(x, y, side, side, { 
       collisionFilter: {
         category: RECT_CATEGORY
@@ -18,19 +28,14 @@ export default class Rect {
     body.side = side;
     body.life = life;
     body.isRect = true;
-    body.visible = true;
-    body.shape = new PIXI.Rectangle(x,y, side, side);
-//    body.text = new PIXI.Text(body.life.toString(), {fontFamily : 'Arial', fontSize: body.side/2, fill : 0x000000, align : 'center'});
-    body.drawGraphic = graphic => {
-      const x_pos = body.position.x - body.side/2;
-      const y_pos = body.position.y - body.side/2;
-//      body.text.x = x;
-//      body.text.y = y - (body.side/4);
-      body.shape.x = x_pos;
-      body.shape.y = y_pos;
-      graphic.drawShape(body.shape);
-//      graphic.addChild(body.text);
+    body.renderable = true;
+    body.graphic = graphic;
+    body.update = () => {
+      graphic.x = body.position.x
+      graphic.y = body.position.y
+      text.text = body.life.toString();
     }
+    body.update();
     return body;  
   }
 }

@@ -23,10 +23,12 @@ class Game {
     this.rectGap = this.rectSide / 8;
     this.ballRadius = this.rectSide * 3/16;
     this.ballVelocity = this.ballRadius * 0.8;
-    this.engine.world.bounds.max.x = canvas.clientWidth;
-    this.engine.world.bounds.max.y = canvas.clientHeight;
+    this.engine.world.bounds.max.x = Infinity;
+    this.engine.world.bounds.min.x = -Infinity;
+    this.engine.world.bounds.max.y = Infinity;
+    this.engine.world.bounds.min.y = -Infinity;
     this.world.gravity.y = 0
-    Engine.run(this.engine);
+    //Engine.run(this.engine);
     this.scene = new PIXI.Application(canvas.clientWidth, canvas.clientHeight, {view: canvas});
     this.createWalls();
     this.level = 1;
@@ -34,7 +36,7 @@ class Game {
     this.pointerDown = false;
     this.pointerStartPos = Vector.create(0,0);
     this.registerPointerListener();
-    this.graphic = new PIXI.Graphics();
+    this.graphic = new PIXI.Container();
     this.launchers = [];
     this.addLauncher(canvas.clientWidth/2);
     this.scene.stage.addChild(this.graphic);
@@ -79,7 +81,7 @@ class Game {
         if(this.launchers.length == 1) {
           this.addLauncher(otherBody.position.x);
         }
-        World.remove(this.world, otherBody);
+        this.removeWorldObject(otherBody);
       } /* else if ( otherBody.isRect ){
         alert("Game Over");
       } */ // Doesn't work yet due to matterjs bug
@@ -98,11 +100,10 @@ class Game {
       rect.onCollideEnd( pair => {
         rect.life--;
         if(rect.life < 1){
-          //rect.text.destroy();
-          World.remove(this.world,rect);
+          this.removeWorldObject(rect);
         }
       });
-      World.add(this.world,rect);
+      this.addWorldObject(rect);
     }
   }
   shiftLevels(){
@@ -161,20 +162,33 @@ class Game {
     const y = launcher.shape.y;
     const ball = Ball.create(x,y,this.ballRadius);
     const launchVec = Vector.normalise(launcher.vector);
-    World.add(this.world, ball);
+    this.addWorldObject(ball);
     Body.setVelocity(ball, Vector.mult(launchVec, this.ballVelocity)); 
-  }  
+  } 
+
+  addWorldObject(object){
+    World.add(this.world, object);
+    if(object.renderable){
+      this.graphic.addChild(object.graphic);
+    }
+  }
+
+  removeWorldObject(object){
+    World.remove(this.world, object);
+    if(object.renderable){
+      this.graphic.removeChild(object.graphic);
+    }
+  }
 
   renderLoop(delta){
     // RENDER RECTANGLES
     // RENDER BALLS
-    this.graphic.clear();
-    this.graphic.beginFill(0xFFFFFF);
+    Engine.update(this.engine, delta * (1000 / 60));
     
     let ballsRemaining = (this.launchers[0].ballCount > 0);
     for( const body of Composite.allBodies(this.world) ){
-      if(body.visible) {
-        body.drawGraphic(this.graphic);
+      if(body.renderable) {
+        body.update();
       }
 
       if(this.state == GameState.PLAYING){
