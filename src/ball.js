@@ -19,8 +19,9 @@ export default class Ball {
     body.radius = radius;
     body.visible = true;
     body.isBall = true;
-    body.getGraphic = function(){
-      return new PIXI.Circle(this.position.x, this.position.y, this.radius);
+    body.drawGraphic = function(graphic){
+      const shape = new PIXI.Circle(this.position.x, this.position.y, this.radius);
+      graphic.drawShape(shape);
     }
     return body;
   }

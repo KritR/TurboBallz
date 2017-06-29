@@ -98,6 +98,7 @@ class Game {
       rect.onCollideEnd( pair => {
         rect.life--;
         if(rect.life < 1){
+          //rect.text.destroy();
           World.remove(this.world,rect);
         }
       });
@@ -106,7 +107,6 @@ class Game {
   }
   shiftLevels(){
     for(const body of Composite.allBodies(this.world)){
-      console.log(body);
       if(body.isRect == true){
         Body.translate(body, Vector.create(0,(this.rectGap + this.rectSide)));
         if(body.position.y >= (this.canvas.clientHeight - ((2 * this.ballRadius) + this.rectSide/2))){
@@ -159,7 +159,6 @@ class Game {
     const launcher = this.launchers[0];
     const x = launcher.shape.x;
     const y = launcher.shape.y;
-    console.log('Creating new Ball @ x : ' + x + ' | y : ' + y);
     const ball = Ball.create(x,y,this.ballRadius);
     const launchVec = Vector.normalise(launcher.vector);
     World.add(this.world, ball);
@@ -175,7 +174,7 @@ class Game {
     let ballsRemaining = (this.launchers[0].ballCount > 0);
     for( const body of Composite.allBodies(this.world) ){
       if(body.visible) {
-      this.graphic.drawShape(body.getGraphic());
+        body.drawGraphic(this.graphic);
       }
 
       if(this.state == GameState.PLAYING){

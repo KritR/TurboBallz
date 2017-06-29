@@ -19,8 +19,17 @@ export default class Rect {
     body.life = life;
     body.isRect = true;
     body.visible = true;
-    body.getGraphic = function(){
-      return new PIXI.Rectangle(this.position.x - this.side/2, this.position.y - this.side/2, this.side, this.side);
+    body.shape = new PIXI.Rectangle(x,y, side, side);
+//    body.text = new PIXI.Text(body.life.toString(), {fontFamily : 'Arial', fontSize: body.side/2, fill : 0x000000, align : 'center'});
+    body.drawGraphic = graphic => {
+      const x_pos = body.position.x - body.side/2;
+      const y_pos = body.position.y - body.side/2;
+//      body.text.x = x;
+//      body.text.y = y - (body.side/4);
+      body.shape.x = x_pos;
+      body.shape.y = y_pos;
+      graphic.drawShape(body.shape);
+//      graphic.addChild(body.text);
     }
     return body;  
   }
