@@ -18,6 +18,7 @@ export default class Ball {
       friction: 0,
       frictionAir: 0,
       frictionStatic: 0,
+      inertia: Infinity,
       restitution: 1
     });
     body.graphic = graphic;
