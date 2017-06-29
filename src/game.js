@@ -27,7 +27,7 @@ class Game {
     this.engine.world.bounds.min.x = -Infinity;
     this.engine.world.bounds.max.y = Infinity;
     this.engine.world.bounds.min.y = -Infinity;
-    this.world.gravity.y = 0
+    this.world.gravity.y = this.ballRadius * 0.0002;
     //Engine.run(this.engine);
     this.scene = new PIXI.Application(canvas.clientWidth, canvas.clientHeight, {view: canvas});
     this.createWalls();

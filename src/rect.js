@@ -11,7 +11,7 @@ export default class Rect {
     graphic.beginFill(0xFFFFFF);
     graphic.drawShape(shape);
     const text = new PIXI.Text(life.toString(), {fontFamily : 'Arial', fontSize: side/2, fill : 0x000000, align : 'center'});
-    text.x = 0;
+    text.x = -text.width/2;
     text.y = -side/4;
     graphic.addChild(text);
 
