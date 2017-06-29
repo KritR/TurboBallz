@@ -29,7 +29,7 @@ class Game {
     this.engine.world.bounds.min.y = -Infinity;
     this.world.gravity.y = this.ballRadius * 0.0002;
     //Engine.run(this.engine);
-    this.scene = new PIXI.Application(canvas.clientWidth, canvas.clientHeight, {view: canvas});
+    this.scene = new PIXI.Application(canvas.clientWidth, canvas.clientHeight, {view: canvas, antialias: true, resolution: window.devicePixelRatio});
     this.createWalls();
     this.level = 1;
     this.ballCount = 30;
@@ -158,8 +158,8 @@ class Game {
 
   shootBall(){
     const launcher = this.launchers[0];
-    const x = launcher.shape.x;
-    const y = launcher.shape.y;
+    const x = launcher.x;
+    const y = launcher.y;
     const ball = Ball.create(x,y,this.ballRadius);
     const launchVec = Vector.normalise(launcher.vector);
     this.addWorldObject(ball);

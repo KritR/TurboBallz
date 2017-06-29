@@ -10,8 +10,7 @@ export default class Rect {
     const shape = new PIXI.Rectangle(x_pos,y_pos, side, side);
     graphic.beginFill(0xFFFFFF);
     graphic.drawShape(shape);
-    const text = new PIXI.Text(life.toString(), {fontFamily : 'Arial', fontSize: side/2, fill : 0x000000, align : 'center'});
-    text.x = -text.width/2;
+    const text = new PIXI.Text(life.toString(), {fontFamily : 'Arial', fontSize: side/2, fill : 0x7d7d7d, align : 'center'});
     text.y = -side/4;
     graphic.addChild(text);
 
@@ -34,6 +33,7 @@ export default class Rect {
       graphic.x = body.position.x
       graphic.y = body.position.y
       text.text = body.life.toString();
+      text.x = -text.width/2;
     }
     body.update();
     return body;  
