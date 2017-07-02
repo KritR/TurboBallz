@@ -23,8 +23,8 @@ class Game {
     this.world = this.engine.world;
     this.rectSide = canvas.clientWidth / 8;
     this.rectGap = this.rectSide / 8;
-    this.ballRadius = this.rectSide * 3/16;
-    this.ballVelocity = this.ballRadius * 0.8;
+    this.ballRadius = this.rectSide * 1/8;
+    this.ballVelocity = this.ballRadius * 1.0;
     this.engine.world.bounds.max.x = Infinity;
     this.engine.world.bounds.min.x = -Infinity;
     this.engine.world.bounds.max.y = Infinity;
@@ -118,7 +118,7 @@ class Game {
     return level;
   }
   generateOnePlus(){
-      const onePlus = OnePlus.create(0,0,this.ballRadius*0.8);
+      const onePlus = OnePlus.create(0,0,this.rectSide*0.3);
       onePlus.onCollide( e => {
         this.removeWorldObject(onePlus);
         this.ballCount++;
@@ -144,7 +144,12 @@ class Game {
       }
       const x = this.rectGap + 0.5 * this.rectSide + ( i * (this.rectGap + this.rectSide));
       Body.setPosition(level[i],Vector.create(x,y));
-      this.addWorldObject(level[i]);
+    }
+    for(const body of level) {
+      if(body == null) {
+        continue;
+      }
+      this.addWorldObject(body);
     }
   }
   shouldAddOnePlus(){
@@ -216,6 +221,7 @@ class Game {
   addWorldObject(object){
     World.add(this.world, object);
     if(object.renderable){
+      object.update();
       this.graphic.addChild(object.graphic);
     }
   }

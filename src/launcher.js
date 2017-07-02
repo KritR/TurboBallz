@@ -17,7 +17,7 @@ export default class Launcher {
     const shape = new PIXI.Circle(0, 0, radius);
     this.graphic.beginFill(0xFF3300);
     this.graphic.drawShape(shape);
-    this.text = new PIXI.Text(ballCount.toString() + 'x', {fontFamily : 'Arial', fontSize: radius * 1.25, fill : 0xFFFFFF, align : 'center'});
+    this.text = new PIXI.Text(ballCount.toString() + 'x', {fontFamily : 'Arial', fontSize: radius * 1.75, fill : 0xFFFFFF, align : 'center'});
     this.text.x = -radius * 4;
     this.text.y = -radius * 3;
     this.launchGraphic = new PIXI.Graphics();
