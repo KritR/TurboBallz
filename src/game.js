@@ -4,6 +4,8 @@ import Matter from 'matter-js';
 import Ball from './ball.js';
 import Rect from './rect.js';
 import Launcher from './launcher.js';
+import OnePlus from './one-plus.js';
+import { randomIntFromInterval, shuffleArray } from './util.js';
 import MatterCollisionEvents from 'matter-collision-events';
 
 Matter.use('matter-collision-events');
@@ -32,7 +34,7 @@ class Game {
     this.scene = new PIXI.Application(canvas.clientWidth, canvas.clientHeight, {view: canvas, antialias: true, resolution: window.devicePixelRatio});
     this.createWalls();
     this.level = 1;
-    this.ballCount = 30;
+    this.ballCount = 1;
     this.pointerDown = false;
     this.pointerStartPos = Vector.create(0,0);
     this.registerPointerListener();
@@ -40,7 +42,8 @@ class Game {
     this.launchers = [];
     this.addLauncher(canvas.clientWidth/2);
     this.scene.stage.addChild(this.graphic);
-    this.generateLevel();
+    const level = this.generateLevel();
+    this.addLevel(level);
     this.launch();
     this.scene.ticker.add(this.renderLoop.bind(this));
   }
@@ -55,6 +58,7 @@ class Game {
   launch(){
     this.state = GameState.LAUNCH;
     this.launchers[0].activate();
+    this.launchers[0].ballCount = this.ballCount;
   }
   playing(){
     this.state = GameState.PLAYING;
@@ -64,7 +68,8 @@ class Game {
     this.level++;
     this.removeLauncher();
     this.shiftLevels();
-    this.generateLevel();
+    const level = this.generateLevel();
+    this.addLevel(level);
     this.launch();
   }
 
@@ -74,6 +79,14 @@ class Game {
     const leftWall = Bodies.rectangle(-1,vCenter,1,this.canvas.clientHeight, {isStatic: true});
     const rightWall = Bodies.rectangle(this.canvas.clientWidth,vCenter,1,this.canvas.clientHeight, {isStatic: true});
     const ceil = Bodies.rectangle(hCenter,-1,this.canvas.clientWidth,1, {isStatic: true});
+    ceil.onCollide( pair => {
+      const otherBody = pair.bodyA != ground ? pair.bodyA : pair.bodyB;
+      if( otherBody.isBall ) {
+        //Attempt to find a way to keep balls from bouncing continuously at top of the screen
+        //Body.applyForce(otherBody, ceil.position, Vector.create(0,-this.ballRadius * 0.25)); 
+      }
+      
+    });
     const ground = Bodies.rectangle(hCenter,this.canvas.clientHeight,this.canvas.clientWidth,1, {isStatic: true});
     ground.onCollide(pair => {
       const otherBody = pair.bodyA != ground ? pair.bodyA : pair.bodyB;
@@ -89,26 +102,60 @@ class Game {
     World.add(this.world, [leftWall, rightWall, ceil, ground]);
   }
   generateLevel(){
-    const y = 1.5 * this.rectSide + this.rectGap;
-    for(let i = 0; i < 7; i++){
-      if(Math.floor(Math.random()*3) > 0){
+    const level = new Array(7);
+    level[0] = this.generateRect();
+    for(let i = 0; i < level.length ; i++){
+      if(randomIntFromInterval(1,3) >= 2){
        continue;
       }
-      const x = this.rectGap + 0.5 * this.rectSide + ( i * (this.rectGap + this.rectSide));
-      const life = Math.ceil(this.level * 2 * Math.random());
-      const rect = Rect.create(x,y,this.rectSide,life); 
-      rect.onCollideEnd( pair => {
-        rect.life--;
-        if(rect.life < 1){
-          this.removeWorldObject(rect);
-        }
-      });
-      this.addWorldObject(rect);
+      level[i] = this.generateRect();
     }
+    if(this.shouldAddOnePlus()){
+      const position = randomIntFromInterval(0,level.length -1);
+      level[position] = this.generateOnePlus();;
+    }
+    shuffleArray(level);
+    return level;
+  }
+  generateOnePlus(){
+      const onePlus = OnePlus.create(0,0,this.ballRadius*0.8);
+      onePlus.onCollide( e => {
+        this.removeWorldObject(onePlus);
+        this.ballCount++;
+      });
+    return onePlus;
+  }
+  generateRect(){
+    const life = Math.ceil(this.level * 2 * Math.random());
+    const rect = Rect.create(0,0,this.rectSide,life); 
+    rect.onCollideEnd( pair => {
+      rect.life--;
+      if(rect.life < 1){
+        this.removeWorldObject(rect);
+      }
+    });
+    return rect;
+  }
+  addLevel(level){
+    const y = 1.5 * this.rectSide + this.rectGap;
+    for(let i = 0; i < level.length ; i++) {
+      if(level[i] == null) {
+        continue;
+      }
+      const x = this.rectGap + 0.5 * this.rectSide + ( i * (this.rectGap + this.rectSide));
+      Body.setPosition(level[i],Vector.create(x,y));
+      this.addWorldObject(level[i]);
+    }
+  }
+  shouldAddOnePlus(){
+    const difference = this.level - this.ballCount; 
+    const odds = 3;
+    const shouldAdd = (difference * randomIntFromInterval(1,odds)) > odds;
+    return shouldAdd;
   }
   shiftLevels(){
     for(const body of Composite.allBodies(this.world)){
-      if(body.isRect == true){
+      if(body.isRect || body.isOnePlus){
         Body.translate(body, Vector.create(0,(this.rectGap + this.rectSide)));
         if(body.position.y >= (this.canvas.clientHeight - ((2 * this.ballRadius) + this.rectSide/2))){
           alert('game over');
