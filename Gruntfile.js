@@ -50,6 +50,9 @@ module.exports = function(grunt) {
          'dist/app.js':['src/*.js'] 
         },
         options: {
+          browserifyOptions: {
+                debug: true
+          },
           transform: ['babelify']
         }
       } 

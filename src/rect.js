@@ -1,16 +1,25 @@
+/* @flow */
 "use strict";
 import { Bodies, Body } from 'matter-js';
 import { RECT_CATEGORY } from './collision-categories.js';
+import Entity from './entity.js';
+import Color from 'color';
+import { Graphics, Rectangle, Text } from 'pixi.js';
 
-export default class Rect {
-  static create(x,y,side,life){
-    const graphic = new PIXI.Graphics();
+const TEXT_COLOR = 0x000000;
+
+export default class Rect extends Entity {
+  life: number;
+  text: Text;
+  graphic: Graphics;
+  body: Body;
+  shape: Rectangle;
+
+  constructor(x: number, y: number, side: number, life: number){
+    const graphic = new Graphics();
     const x_pos = -side/2;
     const y_pos = -side/2;
-    const shape = new PIXI.Rectangle(x_pos,y_pos, side, side);
-    graphic.beginFill(0xFFFFFF);
-    graphic.drawShape(shape);
-    const text = new PIXI.Text(life.toString(), {fontFamily : 'Arial', fontSize: side/2, fill : 0x7d7d7d, align : 'center'});
+    const text = new Text(life.toString(), {fontFamily : 'Arial', fontSize: side/2, fill : TEXT_COLOR, align : 'center'});
     text.y = -side/4;
     graphic.addChild(text);
 
@@ -19,23 +28,35 @@ export default class Rect {
         category: RECT_CATEGORY
       },
       isStatic: true,
-      friction: 0,
-      frictionAir: 0,
-      frictionStatic: 0
     });
 
-    body.side = side;
-    body.life = life;
-    body.isRect = true;
-    body.renderable = true;
-    body.graphic = graphic;
-    body.update = () => {
-      graphic.x = body.position.x
-      graphic.y = body.position.y
-      text.text = body.life.toString();
-      text.x = -text.width/2;
-    }
-    body.update();
-    return body;  
+    super(body,graphic);
+
+    this.shape = new Rectangle(x_pos,y_pos, side, side);
+    this.life = life;
+    this.text = text;
+
+    body.onCollideEnd( pair => {
+      if(--this.life < 1) {
+        this.destroy();
+      }
+    });
+  }
+  update() {
+    this.graphic.clear();
+    this.graphic.beginFill(this.getColor());
+    this.graphic.drawShape(this.shape);
+    this.graphic.x = this.body.position.x
+    this.graphic.y = this.body.position.y
+    this.text.text = this.life.toString();
+    this.text.x = -this.text.width/2;
+  }
+  getColor(): number{
+    const color = new Color({
+      h: (50 - this.life*3) % 360,
+      s: 90,
+      l: 55 - Math.ceil(this.life/50)
+    });
+    return color.rgbNumber();
   }
 }

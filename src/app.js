@@ -1,14 +1,19 @@
 "use strict";
-
+/* @flow */
 import pep from 'pepjs';
-import PIXI from 'pixi.js';
-import {Game} from './game.js';
-import Color from 'color';
+import BallzScene from './ballz-scene.js';
 import Matter from 'matter-js';
+import MatterCollisionEvents from 'matter-collision-events';
+
+Matter.use('matter-collision-events');
 
 export default class Application {
+  game: BallzScene
   constructor(){
-    this.game = new Game(document.getElementById('game'));
+    const canvas : HTMLCanvasElement = (document.getElementsByTagName('canvas')[0]: HTMLCanvasElement);
+    if(canvas != null) {
+      this.game = new BallzScene(canvas);
+    }
   }
 }
 

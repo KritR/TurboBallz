@@ -1,14 +1,11 @@
 "use strict";
+
 import { Engine , World , Events, Vector, Composite, Body, Bodies } from 'matter-js';
-import Matter from 'matter-js';
 import Ball from './ball.js';
 import Rect from './rect.js';
 import Launcher from './launcher.js';
 import OnePlus from './one-plus.js';
 import { randomIntFromInterval, shuffleArray } from './util.js';
-import MatterCollisionEvents from 'matter-collision-events';
-
-Matter.use('matter-collision-events');
 
 const GameState = Object.freeze({
   LAUNCH: 1,
@@ -49,15 +46,13 @@ class Game {
   }
   pause(){
     this.scene.ticker.stop();
-    this.engine.timing.timeScale = 0;
   }
   resume(){
-    this.engine.timing.timeScale = 1;
     this.scene.ticker.start();
   }
   launch(){
     this.state = GameState.LAUNCH;
-    this.launchers[0].activate();
+    this.launchers[0].showText();
     this.launchers[0].ballCount = this.ballCount;
   }
   playing(){
@@ -187,11 +182,13 @@ class Game {
     document.getElementById("game").addEventListener("pointerdown", e => {
       if(this.state == GameState.LAUNCH){
         this.pointerDown = true;
+        this.launchers[0].activate();
         this.pointerStartPos = Vector.create(e.pageX, e.pageY);
       }
     });
     document.addEventListener("pointerup", e => {
       this.pointerDown = false;
+      this.launchers[0].deactivate();
       if(this.launchers[0].isLaunchable() && this.state == GameState.LAUNCH){
         this.playing();
       }
@@ -257,7 +254,7 @@ class Game {
     
     // RENDER LAUNCHER
     for(const launcher of this.launchers){
-      launcher.render(this.pointerDown && this.state == GameState.LAUNCH);
+      launcher.render(this.pointerDown);
     }
 
     // SHOOT BALLS
