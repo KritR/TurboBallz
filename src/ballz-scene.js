@@ -35,6 +35,8 @@ export default class BallzScene extends Scene {
 
   constructor(canvas: HTMLCanvasElement){
     super(canvas);
+    this.engine.positionIterations = 1000;
+    this.engine.velocityIterations = 1000;
     this.rectSide = canvas.clientWidth / 8;
     this.rectGap = this.rectSide / 8;
     this.ballRadius = this.rectSide * 1/8;

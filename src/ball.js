@@ -10,8 +10,7 @@ const COLOR = 0xFFFFFF;
 export default class Ball extends Entity{
   graphic: Graphics;
   body: Body;
-  speed: number;
-  constructor(x: number, y: number, radius: number, speed: number, initialVelocity: Vector){
+  constructor(x: number, y: number, radius: number, speed: number, direction: Vector){
     const graphic = new Graphics();
     const shape = new Circle(0, 0, radius);
     graphic.beginFill(COLOR);
@@ -24,19 +23,15 @@ export default class Ball extends Entity{
       friction: 0,
       frictionAir: 0,
       frictionStatic: 0,
+      inertia: Infinity,
       restitution: 1
     });
-    Body.setVelocity(body, initialVelocity);
+    const velocity = Vector.mult(Vector.normalise(direction),speed);
+    Body.setVelocity(body, velocity);
     super(body,graphic);
-    this.speed = speed;
   }
   update() {
       this.graphic.x = this.body.position.x;
       this.graphic.y = this.body.position.y;
-      if(Vector.magnitude(this.body.velocity) != this.speed){
-        const velocity = Vector.normalise(this.body.velocity)
-        console.log('speed : ' + this.speed + ' ; vel : ' + this.body.velocity);
-        Body.setVelocity(this.body, Vector.mult(velocity, this.speed));
-      }
   }
 }
