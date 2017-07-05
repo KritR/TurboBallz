@@ -91,12 +91,6 @@ export default class BallzScene extends Scene {
         } */ // Doesn't work yet due to matterjs bug
       });
     }
-    if( ceil.body != null ) {
-      ceil.body.onCollideEnd(pair => {
-          const otherBody = pair.bodyA != ground.body ? pair.bodyA : pair.bodyB;
-          Body.applyForce(otherBody, Vector.create(hCenter, 0), Vector.create(0,-0.02));
-      });
-    }
     this.addEntity(leftWall, rightWall, ceil, ground);
   }
 
@@ -183,10 +177,8 @@ export default class BallzScene extends Scene {
     const launcher = this.launchers[0];
     const x = launcher.position.x;
     const y = launcher.position.y;
-    const ball = new Ball(x,y,this.ballRadius);
-    const launchVec = Vector.normalise(launcher.vector);
+    const ball = new Ball(x,y,this.ballRadius, this.ballVelocity, launcher.vector);
     this.addEntity(ball);
-    Body.setVelocity(ball.body, Vector.mult(launchVec, this.ballVelocity)); 
   } 
 
   registerPointerListener(){
