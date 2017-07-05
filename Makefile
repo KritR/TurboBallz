@@ -6,6 +6,7 @@ SRC_DIR := src
 BUILD_DIR := build
 
 JS_ENTRY := $(SRC_DIR)/app.js
+JS_SOURCE := $(wildcard $(SRC_DIR)/*.js)
 JS_BUILD := $(patsubst src/%.js, $(BUILD_DIR)/%.js, $(JS_ENTRY))
 
 # browserifyinc caches builds to this file
@@ -18,7 +19,7 @@ HTML_BUILD := $(patsubst $(SRC_DIR)/%.html, $(BUILD_DIR)/%.html, $(HTML_SOURCE))
 
 all: $(HTML_BUILD) $(JS_BUILD)
 
-$(JS_BUILD): $(JS_ENTRY)
+$(JS_BUILD): $(JS_ENTRY) $(JS_SOURCE)
 	mkdir -p $(dir $@)
 	browserifyinc --cachefile $(JS_BUILD_CACHE) --entry $< --outfile $@ --transform babelify
 
