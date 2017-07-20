@@ -1,14 +1,18 @@
 /* @flow */
 "use strict";
 
-import { Event, Vector, Body, Bodies } from 'matter-js';
-import Scene from './scene.js';
-import Ball from './ball.js';
-import Rect from './rect.js';
-import Launcher from './launcher.js';
-import OnePlus from './one-plus.js';
-import Entity from './entity.js';
-import { randomIntFromInterval, shuffleArray } from './util.js';
+import { Events, Vector, Body, Bodies } from 'matter-js';
+import Scene from './lib/scene.js';
+import Entity from './lib/entity.js';
+import Ball from './entities/ball.js';
+import Rect from './entities/rect.js';
+import Launcher from './entities/launcher.js';
+import OnePlus from './entities/one-plus.js';
+import { randomIntFromInterval, shuffleArray } from './lib/util.js';
+import Matter from 'matter-js';
+import MatterCollisionEvents from 'matter-collision-events';
+
+Matter.use('matter-collision-events');
 
 const SceneState = Object.freeze({
   LAUNCH: 1,
@@ -33,20 +37,20 @@ export default class BallzScene extends Scene {
   pointerDown: boolean = false;
   pointerStartPos: Vector = Vector.create(0,0);
 
-  constructor(canvas: HTMLCanvasElement){
-    super(canvas);
+  constructor(width: number, height: number){
+    super(width, height);
     this.engine.positionIterations = 1000;
     this.engine.velocityIterations = 1000;
-    this.rectSide = canvas.clientWidth / 8;
+    this.rectSide = width / 8;
     this.rectGap = this.rectSide / 8;
     this.ballRadius = this.rectSide * 1/8;
     this.ballVelocity = this.ballRadius * 1.0;
-    this.launcherY = this.canvas.clientHeight - this.ballRadius;
+    this.launcherY = this.height - this.ballRadius;
     this.world.gravity.y = this.ballRadius * 0.0002;
     this.registerPointerListener();
     this.createWalls();
     this.display.ticker.add(this.update.bind(this));
-    this.addLauncher(canvas.clientWidth/2);
+    this.addLauncher(width/2);
     this.newLevel();
   }
 
@@ -63,23 +67,25 @@ export default class BallzScene extends Scene {
   newLevel() {
     this.state = SceneState.NEW_LEVEL;
     this.level++;
+    Events.trigger(this,'levelSet', { level: this.level } );
     if(this.launchers.length > 1){
       this.removeLauncher();
     }
     this.shiftLevels();
     const level = this.generateLevel();
+    console.log(level);
     this.addLevel(level);
     this.launching();
   }
 
 
   createWalls(){
-    const vCenter = this.canvas.clientHeight/2;
-    const hCenter = this.canvas.clientWidth/2;
-    const leftWall = new Entity(Bodies.rectangle(-1,vCenter,1,this.canvas.clientHeight, {isStatic: true}), null);;
-    const rightWall = new Entity(Bodies.rectangle(this.canvas.clientWidth,vCenter,1,this.canvas.clientHeight, {isStatic: true}),null);
-    const ceil = new Entity(Bodies.rectangle(hCenter,-1,this.canvas.clientWidth,1, {isStatic: true}), null);
-    const ground = new Entity(Bodies.rectangle(hCenter,this.canvas.clientHeight,this.canvas.clientWidth,1, {isStatic: true}),null);
+    const vCenter = this.height/2;
+    const hCenter = this.width/2;
+    const leftWall = new Entity(Bodies.rectangle(-1,vCenter,1,this.height, {isStatic: true}), null);;
+    const rightWall = new Entity(Bodies.rectangle(this.width,vCenter,1,this.height, {isStatic: true}),null);
+    const ceil = new Entity(Bodies.rectangle(hCenter,-1,this.width,1, {isStatic: true}), null);
+    const ground = new Entity(Bodies.rectangle(hCenter,this.height,this.width,1, {isStatic: true}),null);
     if( ground.body != null ) {
       ground.body.onCollide(pair => {
         const otherBody = pair.bodyA != ground.body ? pair.bodyA : pair.bodyB;
@@ -164,7 +170,7 @@ export default class BallzScene extends Scene {
       if(entity instanceof Rect || entity instanceof OnePlus){
         Body.translate(entity.body, Vector.create(0,(this.rectGap + this.rectSide)));
         if(entity.body.position.y >= (this.launcherY - ((2 * this.ballRadius) + this.rectSide/2))){
-          alert('game over');
+          Events.trigger(this, 'gameOver', {});
         }
       }
     }
@@ -185,7 +191,7 @@ export default class BallzScene extends Scene {
 
   registerPointerListener(){
    // Events are type < any > until flow stops giving me errors for it 
-    this.canvas.addEventListener("pointerdown", (e: any) => {
+    this.display.view.addEventListener("pointerdown", (e: any) => {
       if (this.state == SceneState.LAUNCH){
         this.pointerDown = true;
         this.launchers[0].activate();

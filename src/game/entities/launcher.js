@@ -2,8 +2,8 @@
 "use strict";
 import {Vector} from 'matter-js';
 import Ball from './ball.js';
-import {toDegrees} from './util.js';
-import Entity from './entity.js';
+import {toDegrees} from '../lib/util.js';
+import Entity from '../lib/entity.js';
 import { Graphics, Circle, Text } from 'pixi.js';
 
 // Launch angle in Degrees

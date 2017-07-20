@@ -2,7 +2,7 @@
 "use strict";
 import { Bodies, Body } from 'matter-js';
 import { RECT_CATEGORY } from './collision-categories.js';
-import Entity from './entity.js';
+import Entity from '../lib/entity.js';
 import Color from 'color';
 import { Graphics, Rectangle, Text } from 'pixi.js';
 

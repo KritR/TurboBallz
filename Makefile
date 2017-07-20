@@ -5,9 +5,12 @@ SHELL := /bin/bash
 SRC_DIR := src
 BUILD_DIR := build
 
-JS_ENTRY := $(SRC_DIR)/app.js
-JS_SOURCE := $(wildcard $(SRC_DIR)/*.js)
-JS_BUILD := $(patsubst src/%.js, $(BUILD_DIR)/%.js, $(JS_ENTRY))
+JS_ENTRY := $(SRC_DIR)/app.jsx
+# JS_SOURCE := $(wildcard $(SRC_DIR)/*.js)
+# JSX_SOURCE := $(wildcard $(SRC_DIR)/*.jsx)
+JS_SOURCE := $(shell find $(SRC_DIR) -type f -name '*.js')
+JSX_SOURCE := $(shell find $(SRC_DIR) -type f -name '*.jsx')
+JS_BUILD := $(patsubst src/%.jsx, $(BUILD_DIR)/%.js, $(JS_ENTRY))
 
 # browserifyinc caches builds to this file
 JS_BUILD_CACHE := .main.cache.json
@@ -19,9 +22,9 @@ HTML_BUILD := $(patsubst $(SRC_DIR)/%.html, $(BUILD_DIR)/%.html, $(HTML_SOURCE))
 
 all: $(HTML_BUILD) $(JS_BUILD)
 
-$(JS_BUILD): $(JS_ENTRY) $(JS_SOURCE)
+$(JS_BUILD): $(JS_ENTRY) $(JS_SOURCE) $(JSX_SOURCE)
 	mkdir -p $(dir $@)
-	browserifyinc --cachefile $(JS_BUILD_CACHE) --entry $< --outfile $@ --transform babelify
+	browserifyinc --debug --cachefile $(JS_BUILD_CACHE) --entry $< --outfile $@ --transform babelify
 
 $(HTML_BUILD): $(HTML_SOURCE)
 	mkdir -p $(dir $@)

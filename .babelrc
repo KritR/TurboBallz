@@ -1,4 +1,4 @@
 {
-  "presets": ["flow", "env"],
-  "plugins": ["transform-class-properties"]
+  "presets": ["flow", "env", "stage-3"],
+  "plugins": ["transform-class-properties","inferno"]
 }

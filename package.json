@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "devDependencies": {
     "babel-cli": "^6.24.1",
+    "babel-plugin-inferno": "^3.2.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-preset-env": "^1.5.2",
     "babel-preset-flow": "^6.23.0",
+    "babel-preset-stage-3": "^6.24.1",
     "babelify": "^7.3.0",
     "browserify": "^14.4.0",
     "browserify-incremental": "^3.1.1",
@@ -15,6 +17,11 @@
   },
   "dependencies": {
     "color": "^2.0.0",
+    "howler": "^2.0.4",
+    "inferno": "^3.6.4",
+    "inferno-component": "^3.6.4",
+    "inferno-redux": "^3.6.4",
+    "inferno-router": "^3.6.4",
     "matter-collision-events": "^0.1.7",
     "matter-js": "^0.12.0",
     "pepjs": "^0.4.3",

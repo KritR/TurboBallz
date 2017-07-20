@@ -11,15 +11,17 @@ export default class Scene {
   world: World = this.engine.world;
   display: Application;
   entities: Array<Entity> = [];
-  canvas: HTMLCanvasElement
+  width: number;
+  height: number;
 
-  constructor(canvas: HTMLCanvasElement){
-    this.canvas = canvas;
+  constructor(width: number, height: number){
+    this.width = width;
+    this.height = height;
     this.world.bounds.max.x = Infinity;
     this.world.bounds.min.x = -Infinity;
     this.world.bounds.max.y = Infinity;
     this.world.bounds.min.y = -Infinity;
-    this.display = new Application(canvas.clientWidth, canvas.clientHeight, {view: canvas, antialias: true, resolution: window.devicePixelRatio});
+    this.display = new Application(width, height, {antialias: true, resolution: window.devicePixelRatio});
     this.display.ticker.add(this.render.bind(this));
   }
 

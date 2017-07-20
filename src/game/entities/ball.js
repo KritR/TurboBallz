@@ -3,7 +3,7 @@
 import { Bodies, Body, Vector } from 'matter-js';
 import { DEFAULT_CATEGORY, RECT_CATEGORY , BALL_CATEGORY } from './collision-categories.js';
 import { Graphics, Circle } from 'pixi.js';
-import Entity from './entity.js';
+import Entity from '../lib/entity.js';
 
 const COLOR = 0xFFFFFF;
 

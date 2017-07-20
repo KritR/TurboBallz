@@ -1,7 +1,7 @@
 /* @flow */
 "use strict";
 import { Bodies, Body } from 'matter-js';
-import Entity from './entity.js';
+import Entity from '../lib/entity.js';
 import { Graphics, Shape, Circle } from 'pixi.js';
 
 const COLOR = 0xFFFFFF;
